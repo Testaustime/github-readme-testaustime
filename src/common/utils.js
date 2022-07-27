@@ -1,7 +1,7 @@
 // @ts-check
 const axios = require("axios");
 const wrap = require("word-wrap");
-const themes = require("../../themes");
+const themes = require("../themes.js");
 const toEmoji = require("emoji-name-map");
 
 /**
@@ -18,7 +18,7 @@ const renderError = (message, secondaryMessage = "") => {
     .gray { fill: #858585 }
     </style>
     <rect x="0.5" y="0.5" width="494" height="99%" rx="4.5" fill="#FFFEFE" stroke="#E4E2E2"/>
-    <text x="25" y="45" class="text">Something went wrong! file an issue at https://tiny.one/readme-stats</text>
+    <text x="25" y="45" class="text">Something went wrong!</text>
     <text data-testid="message" x="25" y="55" class="text small">
       <tspan x="25" dy="18">${encodeHTML(message)}</tspan>
       <tspan x="25" dy="18" class="gray">${secondaryMessage}</tspan>
@@ -41,15 +41,6 @@ function encodeHTML(str) {
 }
 
 /**
- * @param {number} num
- */
-function kFormatter(num) {
-  return Math.abs(num) > 999
-    ? Math.sign(num) * parseFloat((Math.abs(num) / 1000).toFixed(1)) + "k"
-    : Math.sign(num) * Math.abs(num);
-}
-
-/**
  * @param {string} hexColor
  * @returns {boolean}
  */
@@ -61,7 +52,7 @@ function isValidHexColor(hexColor) {
 
 /**
  * @param {string} value
- * @returns {boolean | string}
+ * @returns {boolean=}
  */
 function parseBoolean(value) {
   if (value === "true") {
@@ -69,7 +60,7 @@ function parseBoolean(value) {
   } else if (value === "false") {
     return false;
   } else {
-    return value;
+    return undefined;
   }
 }
 
@@ -119,20 +110,6 @@ function fallbackColor(color, fallbackColor) {
 }
 
 /**
- * @param {import('axios').AxiosRequestConfig['data']} data
- * @param {import('axios').AxiosRequestConfig['headers']} headers
- */
-function request(data, headers) {
-  // @ts-ignore
-  return axios({
-    url: "https://api.github.com/graphql",
-    method: "post",
-    headers,
-    data,
-  });
-}
-
-/**
  * @param {object} props
  * @param {string[]} props.items
  * @param {number} props.gap
@@ -166,8 +143,8 @@ function flexLayout({ items, gap, direction, sizes = [] }) {
  * @prop {string?=} icon_color
  * @prop {string?=} bg_color
  * @prop {string?=} border_color
- * @prop {keyof typeof import('../../themes')?=} fallbackTheme
- * @prop {keyof typeof import('../../themes')?=} theme
+ * @prop {string?=} fallbackTheme
+ * @prop {string?=} theme
  */
 /**
  * returns theme based colors with proper overrides and defaults
@@ -213,44 +190,6 @@ function getCardColors({
 
   return { titleColor, iconColor, textColor, bgColor, borderColor };
 }
-
-/**
- * @param {string} text
- * @param {number} width
- * @param {number} maxLines
- * @returns {string[]}
- */
-function wrapTextMultiline(text, width = 59, maxLines = 3) {
-  const fullWidthComma = "，";
-  const encoded = encodeHTML(text);
-  const isChinese = encoded.includes(fullWidthComma);
-
-  let wrapped = [];
-
-  if (isChinese) {
-    wrapped = encoded.split(fullWidthComma); // Chinese full punctuation
-  } else {
-    wrapped = wrap(encoded, {
-      width,
-    }).split("\n"); // Split wrapped lines to get an array of lines
-  }
-
-  const lines = wrapped.map((line) => line.trim()).slice(0, maxLines); // Only consider maxLines lines
-
-  // Add "..." to the last line if the text exceeds maxLines
-  if (wrapped.length > maxLines) {
-    lines[maxLines - 1] += "...";
-  }
-
-  // Remove empty lines if text fits in less than maxLines lines
-  const multiLineText = lines.filter(Boolean);
-  return multiLineText;
-}
-
-const noop = () => {};
-// return console instance based on the environment
-const logger =
-  process.env.NODE_ENV !== "test" ? console : { log: noop, error: noop };
 
 const CONSTANTS = {
   THIRTY_MINUTES: 1800,
@@ -338,57 +277,19 @@ function measureText(str, fontSize = 10) {
 /** @param {string} name */
 const lowercaseTrim = (name) => name.toLowerCase().trim();
 
-/**
- * @template T
- * @param {Array<T>} arr
- * @param {number} perChunk
- * @returns {Array<T>}
- */
-function chunkArray(arr, perChunk) {
-  return arr.reduce((resultArray, item, index) => {
-    const chunkIndex = Math.floor(index / perChunk);
-
-    if (!resultArray[chunkIndex]) {
-      resultArray[chunkIndex] = []; // start a new chunk
-    }
-
-    resultArray[chunkIndex].push(item);
-
-    return resultArray;
-  }, []);
-}
-
-/**
- *
- * @param {string} str
- * @returns {string}
- */
-function parseEmojis(str) {
-  if (!str) throw new Error("[parseEmoji]: str argument not provided");
-  return str.replace(/:\w+:/gm, (emoji) => {
-    return toEmoji.get(emoji) || "";
-  });
-}
-
 module.exports = {
   renderError,
-  kFormatter,
   encodeHTML,
   isValidHexColor,
-  request,
   parseArray,
   parseBoolean,
   fallbackColor,
   flexLayout,
   getCardColors,
   clampValue,
-  wrapTextMultiline,
   measureText,
-  logger,
   CONSTANTS,
   CustomError,
   MissingParamError,
   lowercaseTrim,
-  chunkArray,
-  parseEmojis,
 };

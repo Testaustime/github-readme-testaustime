@@ -1,16 +1,16 @@
 // @ts-check
-const Card = require("../common/Card");
-const I18n = require("../common/I18n");
-const { getStyles } = require("../getStyles");
-const { wakatimeCardLocales } = require("../translations");
-const languageColors = require("../common/languageColors.json");
-const { createProgressNode } = require("../common/createProgressNode");
+const Card = require("./common/Card");
+const I18n = require("./common/I18n");
+const { getStyles } = require("./getStyles");
+const { testaustimeCardLocales } = require("./translations");
+const languageColors = require("./common/languageColors.js");
 const {
   clampValue,
   getCardColors,
   flexLayout,
   lowercaseTrim,
-} = require("../common/utils");
+  measureText,
+} = require("./common/utils");
 
 /**
  * @param {{color: string, text: string}} param0
@@ -24,14 +24,13 @@ const noCodingActivityNode = ({ color, text }) => {
 /**
  *
  * @param {{
- *  lang: import("../fetchers/types").WakaTimeLang,
- *  totalSize: number,
+ *  lang: import("./fetcher").Language
  *  x: number,
  *  y: number
  * }} props
  */
-const createCompactLangNode = ({ lang, totalSize, x, y }) => {
-  const color = languageColors[lang.name] || "#858585";
+const createCompactLangNode = ({ lang, x, y }) => {
+  const color = languageColors(lang.id) || "#858585";
 
   return `
     <g transform="translate(${x}, ${y})">
@@ -45,29 +44,52 @@ const createCompactLangNode = ({ lang, totalSize, x, y }) => {
 
 /**
  * @param {{
- *  langs: import("../fetchers/types").WakaTimeLang[],
+ *  langs: import("./fetcher").Language[],
  *  totalSize: number,
  *  x: number,
  *  y: number
  * }} props
  */
-const createLanguageTextNode = ({ langs, totalSize, x, y }) => {
+const createLanguageTextNode = ({ langs, y }) => {
   return langs.map((lang, index) => {
     if (index % 2 === 0) {
       return createCompactLangNode({
         lang,
         x: 25,
         y: 12.5 * index + y,
-        totalSize,
       });
     }
     return createCompactLangNode({
       lang,
       x: 230,
       y: 12.5 + 12.5 * index,
-      totalSize,
     });
   });
+};
+
+const createProgressNode = ({
+  x,
+  y,
+  width,
+  color,
+  progress,
+  progressBarBackgroundColor,
+}) => {
+  const progressPercentage = clampValue(progress, 2, 100);
+
+  return `
+    <svg width="${width}" x="${x}" y="${y}">
+      <rect rx="5" ry="5" x="0" y="0" width="${width}" height="8" fill="${progressBarBackgroundColor}"></rect>
+      <rect
+          height="8"
+          fill="${color}"
+          rx="5" ry="5" x="0" y="0" 
+          data-testid="lang-progress"
+          width="${progressPercentage}%"
+      >
+      </rect>
+    </svg>
+  `;
 };
 
 /**
@@ -80,7 +102,8 @@ const createLanguageTextNode = ({ langs, totalSize, x, y }) => {
  *  percent: number;
  *  hideProgress: boolean;
  *  progressBarColor: string;
- *  progressBarBackgroundColor: string
+ *  progressBarBackgroundColor: string;
+ *  firstColumnWidth: number;
  * }} props
  */
 const createTextNode = ({
@@ -92,13 +115,14 @@ const createTextNode = ({
   hideProgress,
   progressBarColor,
   progressBarBackgroundColor,
+  firstColumnWidth,
 }) => {
   const staggerDelay = (index + 3) * 150;
 
   const cardProgress = hideProgress
     ? null
     : createProgressNode({
-        x: 110,
+        x: firstColumnWidth + 20, // 150,
         y: 4,
         progress: percent,
         color: progressBarColor,
@@ -113,7 +137,7 @@ const createTextNode = ({
       <text class="stat bold" y="12.5" data-testid="${id}">${label}:</text>
       <text
         class="stat"
-        x="${hideProgress ? 170 : 350}"
+        x="${firstColumnWidth + (hideProgress ? 20 : 250)}"
         y="12.5"
       >${value}</text>
       ${cardProgress}
@@ -122,7 +146,7 @@ const createTextNode = ({
 };
 
 /**
- * @param {import("../fetchers/types").WakaTimeLang[]} languages
+ * @param {import("./fetcher").Language[]} languages
  */
 const recalculatePercentages = (languages) => {
   // recalculating percentages so that,
@@ -138,12 +162,32 @@ const recalculatePercentages = (languages) => {
 };
 
 /**
- * @param {Partial<import('../fetchers/types').WakaTimeData>} stats
- * @param {Partial<import('./types').WakaTimeOptions>} options
+ * @typedef CardOptions
+ * @property {string} title_color
+ * @property {string} icon_color
+ * @property {string} text_color
+ * @property {string} bg_color
+ * @property {string} theme
+ * @property {number} border_radius
+ * @property {string} border_color
+ * @property {string} locale
+ * @property {boolean} hide_title
+ * @property {boolean} hide_border
+ * @property {string[]} hide
+ * @property {string} line_height
+ * @property {boolean} hide_progress
+ * @property {string} custom_title
+ * @property {"compact" | "normal"} layout
+ * @property {number} langs_count
+ */
+
+/**
+ * @param {import('./fetcher').Language[]} stats
+ * @param {Partial<CardOptions>} options
  * @returns {string}
  */
-const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
-  let { languages } = stats;
+const renderTestaustimeCard = (stats = [], options = { hide: [] }) => {
+  let languages = stats;
   const {
     hide_title = false,
     hide_border = false,
@@ -167,14 +211,14 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
   if (shouldHideLangs && languages !== undefined) {
     const languagesToHide = new Set(hide.map((lang) => lowercaseTrim(lang)));
     languages = languages.filter(
-      (lang) => !languagesToHide.has(lowercaseTrim(lang.name)),
+      (lang) => !languagesToHide.has(lowercaseTrim(lang.id)),
     );
     recalculatePercentages(languages);
   }
 
   const i18n = new I18n({
     locale,
-    translations: wakatimeCardLocales,
+    translations: testaustimeCardLocales,
   });
 
   const lheight = parseInt(String(line_height), 10);
@@ -225,7 +269,7 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
         // const progress = (width * lang.percent) / 100;
         const progress = ((width - 25) * language.percent) / 100;
 
-        const languageColor = languageColors[language.name] || "#858585";
+        const languageColor = languageColors(language.id) || "#858585";
 
         const output = `
           <rect
@@ -243,7 +287,7 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
       })
       .join("");
 
-    finalLayout = `
+    finalLayout = filteredLanguages.length ? `
       <mask id="rect-mask">
       <rect x="25" y="0" width="${width - 50}" height="8" fill="white" rx="5" />
       </mask>
@@ -254,8 +298,15 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
         langs: filteredLanguages,
         totalSize: 100,
       }).join("")}
-    `;
+    ` : noCodingActivityNode({
+      // @ts-ignore
+      color: textColor,
+      text: i18n.t("testaustimecard.nocodingactivity"),
+    });
   } else {
+    const textWidth = Math.max(...filteredLanguages.map(l => measureText(l.name, 12)));
+    width += textWidth - 75;
+    if (hide_progress) width -= 225;
     finalLayout = flexLayout({
       items: filteredLanguages.length
         ? filteredLanguages.map((language) => {
@@ -268,14 +319,15 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
               progressBarColor: titleColor,
               // @ts-ignore
               progressBarBackgroundColor: textColor,
-              hideProgress: hide_progress,
+              hideProgress: hide_progress ?? false,
+              firstColumnWidth: textWidth,
             });
           })
         : [
             noCodingActivityNode({
               // @ts-ignore
               color: textColor,
-              text: i18n.t("wakatimecard.nocodingactivity"),
+              text: i18n.t("testaustimecard.nocodingactivity"),
             }),
           ],
       gap: lheight,
@@ -285,8 +337,8 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
 
   const card = new Card({
     customTitle: custom_title,
-    defaultTitle: i18n.t("wakatimecard.title"),
-    width: 495,
+    defaultTitle: i18n.t("testaustimecard.title"),
+    width: width,
     height,
     border_radius,
     colors: {
@@ -314,5 +366,4 @@ const renderWakatimeCard = (stats = {}, options = { hide: [] }) => {
   `);
 };
 
-module.exports = renderWakatimeCard;
-exports.createProgressNode = createProgressNode;
+module.exports = renderTestaustimeCard;

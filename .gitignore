@@ -5,9 +5,5 @@ package-lock.json
 *.lock
 .vscode/
 .idea/
-coverage
 vercel_token
-
-# IDE
-.vscode
 *.code-workspace

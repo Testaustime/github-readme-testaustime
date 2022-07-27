@@ -10,11 +10,11 @@ class I18n {
       throw new Error(`${str} Translation string not found`);
     }
 
-    if (!this.translations[str][this.locale || this.fallbackLocale]) {
+    if (!this.translations[str][this.locale] && !this.translations[str][this.fallbackLocale]) {
       throw new Error(`${str} Translation locale not found`);
     }
 
-    return this.translations[str][this.locale || this.fallbackLocale];
+    return this.translations[str][this.locale] ?? this.translations[str][this.fallbackLocale];
   }
 }
 

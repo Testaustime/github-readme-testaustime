@@ -7,8 +7,8 @@ const {
   CONSTANTS,
 } = require("../src/common/utils");
 const { isLocaleAvailable } = require("../src/translations");
-const { fetchWakatimeStats } = require("../src/fetchers/wakatime-fetcher");
-const wakatimeCard = require("../src/cards/wakatime-card");
+const { fetchTestaustimeStats } = require("../src/fetcher");
+const testaustimeCard = require("../src/card");
 
 module.exports = async (req, res) => {
   const {
@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const stats = await fetchWakatimeStats({ username, api_domain, range });
+    const stats = await fetchTestaustimeStats({ username, api_domain, range });
 
     let cacheSeconds = clampValue(
       parseInt(cache_seconds || CONSTANTS.FOUR_HOURS, 10),
@@ -56,7 +56,7 @@ module.exports = async (req, res) => {
     res.setHeader("Cache-Control", `public, max-age=${cacheSeconds}`);
 
     return res.send(
-      wakatimeCard(stats, {
+      testaustimeCard(stats, {
         custom_title,
         hide_title: parseBoolean(hide_title),
         hide_border: parseBoolean(hide_border),

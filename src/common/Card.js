@@ -4,22 +4,20 @@ const { flexLayout, encodeHTML } = require("../common/utils");
 class Card {
   /**
    * @param {object} args
-   * @param {number?=} args.width
-   * @param {number?=} args.height
+   * @param {number} args.width
+   * @param {number} args.height
    * @param {number?=} args.border_radius
    * @param {string?=} args.customTitle
-   * @param {string?=} args.defaultTitle
-   * @param {string?=} args.titlePrefixIcon
-   * @param {ReturnType<import('../common/utils').getCardColors>?=} args.colors
+   * @param {string} args.defaultTitle
+   * @param {ReturnType<import('../common/utils').getCardColors>} args.colors
    */
   constructor({
-    width = 100,
-    height = 100,
-    border_radius = 4.5,
-    colors = {},
+    width,
+    height,
+    border_radius,
+    colors,
     customTitle,
-    defaultTitle = "",
-    titlePrefixIcon,
+    defaultTitle,
   }) {
     this.width = width;
     this.height = height;
@@ -32,7 +30,7 @@ class Card {
     // returns theme based colors with proper overrides and defaults
     this.colors = colors;
     this.title =
-      customTitle !== undefined
+      customTitle != null
         ? encodeHTML(customTitle)
         : encodeHTML(defaultTitle);
 
@@ -40,22 +38,8 @@ class Card {
 
     this.paddingX = 25;
     this.paddingY = 35;
-    this.titlePrefixIcon = titlePrefixIcon;
-    this.animations = true;
     this.a11yTitle = "";
     this.a11yDesc = "";
-  }
-
-  disableAnimations() {
-    this.animations = false;
-  }
-
-  /**
-   * @param {{title: string, desc: string}} prop
-   */
-  setAccessibilityLabel({ title, desc }) {
-    this.a11yTitle = title;
-    this.a11yDesc = desc;
   }
 
   /**
@@ -82,13 +66,6 @@ class Card {
     }
   }
 
-  /**
-   * @param {string} text
-   */
-  setTitle(text) {
-    this.title = text;
-  }
-
   renderTitle() {
     const titleText = `
       <text
@@ -99,26 +76,13 @@ class Card {
       >${this.title}</text>
     `;
 
-    const prefixIcon = `
-      <svg
-        class="icon"
-        x="0"
-        y="-13"
-        viewBox="0 0 16 16"
-        version="1.1"
-        width="16"
-        height="16"
-      >
-        ${this.titlePrefixIcon}
-      </svg>
-    `;
     return `
       <g
         data-testid="card-title"
         transform="translate(${this.paddingX}, ${this.paddingY})"
       >
         ${flexLayout({
-          items: [this.titlePrefixIcon && prefixIcon, titleText],
+          items: [titleText],
           gap: 25,
         }).join("")}
       </g>
@@ -175,12 +139,7 @@ class Card {
           }
           ${this.css}
 
-          ${process.env.NODE_ENV === "test" ? "" : getAnimations()}
-          ${
-            this.animations === false
-              ? `* { animation-duration: 0s !important; animation-delay: 0s !important; }`
-              : ""
-          }
+          ${getAnimations()}
         </style>
 
         ${this.renderGradient()}
