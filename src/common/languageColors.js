@@ -26,7 +26,7 @@ const languageColor = (name) => {
         "rust": "#dea584",
         "vimwiki": "#199f4b",
         "abap": "#E8274B",
-        "bat":  "#C1F12E",
+        "bat": "#C1F12E",
         "bibtex": "#778899",
         "coffeescript": "#244776",
         "c": "#555555",
@@ -62,6 +62,9 @@ const languageColor = (name) => {
         "conf": "#fff1f2",
         "dockercompose": "#384d54",
         "mdx": "#083fa1",
+        "java": "#f0931c",
+        null: "#999999",
+        undefined: "#999999",
     }[name] || createColor(name));
 };
 

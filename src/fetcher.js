@@ -73,7 +73,7 @@ const prettifyLanguageName = (name) => {
     "conf": "Config",
     "dockercompose": "Docker Compose",
     "mdx": "Markdown Extended"
-  }[name] || name.replace(/(^|[^a-z])\w/gim, (c) => c.toUpperCase()));
+  }[name] || name?.replace(/(^|[^a-z])\w/gim, (c) => c.toUpperCase())) || "Unknown";
 };
 
 /**
@@ -119,7 +119,7 @@ const fetchTestaustimeStats = async ({ username, api_domain, range }) => {
     let total_seconds = 0;
 
     for (const activity of data) {
-      const norm = normalizeLanguageName(activity.language);
+      const norm = normalizeLanguageName(activity.language?.toLowerCase());
       total_seconds += activity.duration;
       if (!languages[norm]) {
         languages[norm] = {
