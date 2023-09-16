@@ -38,7 +38,7 @@ Used to set the testaustime username
 
 
 ### theme <a name="theme"></a>
-Used to specify which [theme](#themes) to use
+Used to specify which [theme](Themes.md) to use
 
 **Example:**
 
