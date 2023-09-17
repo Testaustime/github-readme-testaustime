@@ -1,5 +1,26 @@
-# Hard fork of [github-readme-stats](https://github.com/anuraghazra/github-readme-stats)
 
-Stripped down version only with a [testaustime](https://testaustime.fi/) card.
+# Testaustime github-readme
 
-Somebody gotta document how to use this. I can't be bothered.
+Show off your [Testaustime](https://github.com/Testaustime) stats on your github profile.
+
+
+
+## Usage
+
+To add a card to your readme, embed a card url as an image according to the [API spec](docs/APISpec.md).
+
+There is a publicly available deployment of this repo available at
+
+`https://github-readme-testaustime.vercel.app`
+
+**Example:**
+
+    <a href="https://github.com/testaustime/">
+        <img src="http://github-readme-testaustime.vercel.app/api/testaustime?username=Testauskoira"/>
+    </a>
+
+
+
+
+
+
