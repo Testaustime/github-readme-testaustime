@@ -5,7 +5,7 @@
 All requests for a card are made to `/api/testaustime` and parameters are passed as query strings.
 
 ## Endpoints
-The API provides 17 routes:
+The API can take 17 different parameters:
 <details>
     <summary>Expand</summary>
 
@@ -152,6 +152,7 @@ Due to all of them using the same syntax, this part covers the following functio
     border_color
 
 Used to set the color of the respective element in hex format. These values will override the current theme if one is specified.
+The `bg_color` parameter can take comma separated values for a gradient using the syntax `degree, color1, color2`
 
 **Example:**
 
@@ -160,6 +161,9 @@ Used to set the color of the respective element in hex format. These values will
 Overriding theme colors:
 
     https://example.com/api/testaustime?username=Testauskoira&theme=dark&border_color=397a37
+Setting a gradient for `bg_color`:
+
+    https://example.com/api/testaustime?username=Testauskoira&bg_color=45,0000ff,ff0000
 
 ### api_domain <a name="api_domain"></a>
 Used to specify the domain for the Testaustime server from which to fetch data. Defaults to `api.testaustime.fi`.
