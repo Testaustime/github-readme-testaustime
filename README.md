@@ -11,7 +11,7 @@ To add a card to your readme, embed a card url as an image according to the [API
 
 There is a publicly available deployment of this repo available at
 
-`http://github-readme-testaustime.vercel.app`
+`https://github-readme-testaustime.vercel.app`
 
 **Example:**
 
