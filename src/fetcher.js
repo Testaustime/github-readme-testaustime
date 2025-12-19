@@ -109,9 +109,9 @@ const fetchTestaustimeStats = async ({ username, api_domain, range }) => {
       `https://${api_domain ? api_domain.replace(/\/$/gi, "") : "api.testaustime.fi"
       }/users/${username}/activity/data?min_duration=1&from=${Math.floor(Date.now() / 1000) - Number(range ?? "7") * 24 * 60 * 60}`,
       {
-        headers: {
+        headers: api_domain == null || api_domain === "api.testaustime.fi" ? {
           Authorization: `Bearer ${process.env.TESTAUSTIME_API_KEY}`,
-        },
+        } : undefined,
       },
     ));
 
